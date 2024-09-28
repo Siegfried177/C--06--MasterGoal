@@ -7,6 +7,8 @@ int team1[5][2] = {{11, 5}, {10, 3}, {10, 7}, {8, 8}, {8, 2}}; // Matriz de posi
 int team2[5][2] = {{3, 5}, {4, 3}, {4, 7}, {6, 8}, {6, 2}}; // Matriz de posiciones del Equipo del Jugador 2 / Computadora
 int ball[2] = {7, 5}; // Posición de la pelota
 int moves[9][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 0}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}; // Las 8 direcciones que se pueden mover la pelota o un jugador
+int corn2[2][2] = {{13,0},{13,10}}; // Corners contrarios del Equipo1
+int corn1[2][2] = {{1,0},{1,10}};// Corners contrarios del Equipo 2
 
 // Funcion para comprobar si el input es un entero
 // Parametros: num es el input, lim_inf es el limite inferior, lim_sup es el limite superior, aux es 1 si num no puede valer 4 el entero y 0 en caso contrario
@@ -104,21 +106,61 @@ void move(int *x, int *y, int move_x, int move_y){
     *x += move_x;
     *y += move_y;
 }
+//Funciòn para verfificar si el balǹ se encuentra en una casilla especial
+int specbox(int team){
+   if(!team){ // Si el equipo es 0 (equipo 1)
+       // Verifica si la pelota está en una de las esquinas del equipo 2 (corn2)
+       if(((ball[0] == corn1[0][0] || ball[0] == corn1[1][0]) && (ball[1] == corn1[0][1] || ball[1] == corn1[1][1])) ||
+          ((ball[0] == 1) && (ball[1] > 2 && ball[1] < 8))){
+           return 1;
+       }
+   } else { // Si el equipo es 1 (equipo 2)
+       // Verifica si la pelota está en una de las esquinas del equipo 1 (corn1)
+       if(((ball[0] == corn2[0][0] || ball[0] == corn2[1][0]) && (ball[1] == corn2[0][1] || ball[1] == corn2[1][1])) ||
+          ((ball[0] == 13) && (ball[1] > 2 && ball[1] < 8))){
+           return 1;
+       }
+   }
+   return 0;
+}
+//Función que reinicia el campo de juego a su estado inicial
+void reset_pitch(){
+	ball[0]= 7;
+	ball[1] = 5;
+	int temp_team1[5][2] = {{11, 5}, {10, 3}, {10, 7}, {8, 8}, {8, 2}};
+	    for (int i = 0; i < 5; i++) {
+	        team1[i][0] = temp_team1[i][0];
+	        team1[i][1] = temp_team1[i][1];
+	    }
+	    // Restaurar las posiciones iniciales de los jugadores del equipo 2
+	    int temp_team2[5][2] = {{3, 5}, {4, 3}, {4, 7}, {6, 8}, {6, 2}};
+	    for (int i = 0; i < 5; i++) {
+	        team2[i][0] = temp_team2[i][0];
+	        team2[i][1] = temp_team2[i][1];
+	    }
+}
 
 int main(){
     // chosen_p guarda el indice del jugador a mover, chosen_d guarda la dirección hacia donde mover la pelota o del jugador, sp es la cantidad de casillas que se mueve la pelota o el jugador
-    int chosen_p, chosen_d, turn, sp, passes; // passes es la cantidad de pases en ese turno
+    int chosen_p, chosen_d, turn, sp, passes,goal; // passes es la cantidad de pases en ese turno
+    goal = 0;
+    turn = 3;
     srand(time(0)); // Aseguro que el rand sea siempre diferente
-    for(int i = 0; i < 15; i++)
-        for (int j = 0; j < 11; j++)
-            if ((i != 0 && i != 14) || ((i == 0 || i == 14) && (j > 2 && j < 8)))
-                pitch[i][j] = '.';
-            else
-                pitch[i][j] = ' ';
+     for(int i = 0; i < 15; i++)
+       for (int j = 0; j < 11; j++){
+           if ((i != 0 && i != 14) || ((i == 0 || i == 14) && (j > 2 && j < 8)))
+               pitch[i][j] = '.';
+           else
+               pitch[i][j] = ' ';
+           if((i == 13 || i == 1) && (j == 0 || j == 10))
+               pitch[i][j] = '#';
+            if((i== 13 || i == 1) && (j>2 && j<8))
+                pitch[i][j] = '#';
+        }
 
     turn = rand() % 2 ? 1 : 0; // Si turn es 0 empieza el jugador 1, si es 1 empieza el jugador 2
     printf("Empieza el Jugador %d\n\n", turn % 2 + 1);
-    while(turn < 10){
+    while(turn < 10 || goal <2){
         printf("Turno del Jugador %d\n", turn % 2 + 1);
 
         puts("Que jugador desea mover? (1 - 5)\n");
@@ -142,10 +184,14 @@ int main(){
             move(&ball[0], &ball[1], moves[chosen_d][0] * sp, moves[chosen_d][1] * sp); // Mover la pelota
             if(possesion(turn % 2, ball[0], ball[1])) passes++; // Si la pelota llega a un jugador de tu equipo, aumenta el contador de pases
             if(ball[0] <= 0 || ball[0] >= 14){ // Si la pelota está en una portería
-                puts("\nGol!!!!");
-            }
-            print_pitch(2);
+               puts("\nGolazo!!!!");
+               reset_pitch();
+               goal++;
+           }
+           if(specbox(turn % 2)){turn++;}
+           print_pitch(2);
         }
+    
 
         turn++;
     }
