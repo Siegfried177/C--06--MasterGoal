@@ -85,7 +85,7 @@ void print_moves(int x, int y, int obj){
     }
 }
 
-// Función para verificar si el equipo en turno tiene la posesión del balón
+// Función para verificar si el equipo en turno tiene la posesión del balón.
 // Parametros: team es 0 si es el equipo 1 y 1 si es el equipo 2, x e y son las coordenadas de la pelota
 // Retorno: 1 si es que se tiene mayoría de jugadores adyacentes a la pelota, 0 en caso contrario
 int possesion(int team, int x, int y){
