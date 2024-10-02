@@ -130,7 +130,26 @@ int specbox(int team){
             return 1;
     return 0;
 }
-
+int check_adj(int team, int chosen_dir, int spaces, int aux){
+    int c1 = 0, c2 = 0; // c1 es el contador para jugadores del equipo 1, c2 para los del equipo 2
+    
+    for(int i = -1; i < 2; i++)
+        for(int j = -1; j < 2; j++)
+            for(int k = 0; k < 5; k++)
+                if((ball[0] + (moves[chosen_dir][0] * spaces) + i == team1[k][0]) && (ball[1] + (moves[chosen_dir][1] * spaces) + j == team1[k][1]))
+                    c1++;
+                else if((ball[0] + (moves[chosen_dir][0] * spaces) + i == team2[k][0]) && (ball[1] + (moves[chosen_dir][1] * spaces) + j == team2[k][1]))
+                    c2++;
+    if(! aux){
+        if(! team && c1 > 0) return 1;
+        if(team && c2 > 0) return 1;
+    }
+    else{
+        if(!team && c2 > c1) return 1;
+        if(team &&  c1 > c2) return 1;
+    }
+    return 0;
+}
 // Función que reinicia el campo de juego a su estado inicial
 void reset_pitch(){
 	int temp_team1[5][2] = {{11, 5}, {10, 3}, {10, 7}, {8, 8}, {8, 2}};
@@ -197,6 +216,17 @@ int main(){
                         break;
                     else puts("\n\tMovimiento invalido");
                 }
+                if(check_adj(turn % 2, chsn_d, sp, 1)){
+                     puts("\n\tMovimiento invalido. No podes dar un pase al rival");
+                     print_pitch();
+                     continue;
+                    }
+                    
+                    if(passes == 3 && check_adj(turn % 2, chsn_d, sp, 0)){
+                        puts("\n\tMovimiento invalido. No podes dar un 4to pase a un compañero");
+                        print_pitch();
+                        continue;
+                    }
                 if(! goalkeeper_arms(moves[chsn_d][0], moves[chsn_d][1], sp)) // Si la pelota no va hacia el brazo de un portero, si va hacia ahí: se detendrá
                     move(&ball[0], &ball[1], moves[chsn_d][0] * sp, moves[chsn_d][1] * sp); // Mover la pelota
                 if(possesion(turn % 2, ball[0], ball[1])) passes++; // Si la pelota llega a un jugador de tu equipo, aumenta el contador de pases
