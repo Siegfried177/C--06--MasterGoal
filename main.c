@@ -3,9 +3,9 @@
 #include <time.h>
 
 char pitch[15][11]; // Matriz que representa el campo de juego
-int team1[5][2] = {{11, 5}, {10, 3}, {10, 7}, {8, 8}, {8, 2}}; // Matriz de posiciones del Equipo del Jugador 1
-int team2[5][2] = {{8, 5}, {4, 3}, {4, 7}, {6, 8}, {6, 2}}; // Matriz de posiciones del Equipo del Jugador 2 / Computadora
-int ball[2] = {9, 5}; // Posición de la pelota
+int team1[5][2] = {{10, 9}, {10, 1}, {10, 6}, {8, 8}, {8, 2}}; // Matriz de posiciones del Equipo del Jugador 1
+int team2[5][2] = {{10, 4}, {4, 3}, {4, 7}, {6, 8}, {6, 2}}; // Matriz de posiciones del Equipo del Jugador 2 / Computadora
+int ball[2] = {10, 5}; // Posición de la pelota
 int moves[9][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 0}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}; // Las 8 direcciones que se pueden mover la pelota o un jugador
 
 // Funcion para comprobar si el input es un entero
@@ -94,6 +94,17 @@ void print_moves(int x, int y, int obj){
     }
 }
 
+// Función que verifica si una casilla se encuentra en un area o corner
+// Parametros: x e y son las coordenadas de la casilla, aux  es 1 para el equipo 1 y 2 para el equipo 2
+// Retorno: 1 si la casilla se encuentra en el area chica, 2 si la casilla se encuentra en el area grande, 3 si esta en tu propio corner 0 en casos contrarios
+int is_box(int x, int y, int aux){
+        if (aux == 1 && (y == 0 || y == 10) && x == 13) return 3;
+        else if (aux == 2 && (y == 0 || y == 10) && x == 1) return 3;
+        else if ((x == 13 || x == 12 || x == 1 || x == 2) && (y > 1 && y < 8)) return 1;
+        else if ((x == 11 || x == 10 || x == 3 || x == 4) && (y > 0 && y < 9)) return 2;
+    return 0;
+}
+
 // Función para verificar si el equipo en turno tiene la posesión del balón.
 // Parametros: team es 0 si es el equipo 1 y 1 si es el equipo 2
 // Retorno: 1 si es que se tiene mayoría de jugadores adyacentes a la pelota, 0 en caso contrario
@@ -104,6 +115,11 @@ int possesion(int team){
             if(team1[i][0] == (ball[0] + moves[k][0]) && team1[i][1] == (ball[1] + moves[k][1])) c++;
             if(team2[i][0] == (ball[0] + moves[k][0]) && team2[i][1] == (ball[1] + moves[k][1])) d++;
         }
+    if(is_box(team1[0][0], team1[0][1], 1))
+        if (ball[0] == team1[0][0] && (ball[1] == team1[0][1] - 1 || ball[1] == team1[0][1] + 1)) c = 100;
+    if(is_box(team2[0][0], team2[0][1], 2))
+        if(ball[0] == team2[0][0] && (ball[1] == team2[0][1] - 1 || ball[1] == team2[0][1] + 1)) d = 100;
+    printf(" team = %d, c = %d, d = %d\n", team, c, d);
     if(! team && c > d) return 1; // Si es turno del equipo 1 y tienen la posesión
     if(team && d > c) return 1; // Si es turno del equipo 2 y tienen la posesión
     return 0;
@@ -157,15 +173,6 @@ int check_adj(int team, int chosen_dir, int spaces, int aux){
     return 0;
 }
 
-// Función que verifica si una casilla se encuentra en un area
-// Parametros: x e y son las coordenadas de la casilla
-// Retorno: 1 si la casilla se encuentra en el area chica, 2 si la casilla se encuentra en el area grande, 0 si no esta en ningun area
-int is_box(int x, int y){
-    if ((x == 13 || x == 12 || x == 1 || x == 2) && (y > 1 && y < 8)) return 1;
-    if ((x == 11 || x == 10 || x == 3 || x == 4) && (y > 0 && y < 9)) return 2;
-    return 0;
-}
-
 int main(){
     // chsn_p guarda el indice del jugador a mover, chsn_d guarda la dirección hacia donde mover la pelota o del jugador, sp es la cantidad de casillas que se mueve la pelota o el jugador
     int chsn_p, chsn_d, turn, sp, passes, goal[2] = {0, 0}, players[2] = {0, 0}, option = 0; // passes es la cantidad de pases en ese turno
@@ -195,6 +202,10 @@ int main(){
                 chsn_d = verify(chsn_d, 0, 8, 1); // Se ingresa la dirección del jugador
                 puts("Cuantas casillas quiere mover al jugador en esa direccion? (1 - 2)");
                 sp = verify(sp, 1, 2, 0); // Ingresar cuantas casillas va a moverse el jugador
+                if(is_box((turn % 2 ? team2[chsn_p][0] : team1[chsn_p][0]) + moves[chsn_d][0] * sp, (turn % 2 ? team2[chsn_p][1] : team1[chsn_p][1]) + moves[chsn_d][1] * sp, turn % 2 + 1) == 3){
+                    puts("No podes ir a tu propio corner");
+                    continue;
+                }
                 if(verify_move((turn % 2 ? team2[chsn_p][0] : team1[chsn_p][0]) + moves[chsn_d][0] * sp, (turn % 2 ? team2[chsn_p][1] : team1[chsn_p][1]) + moves[chsn_d][1] * sp, 0)) 
                     break;
                 else puts("\n\tMovimiento invalido");
