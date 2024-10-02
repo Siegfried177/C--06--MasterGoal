@@ -49,9 +49,9 @@ int is_box(int x, int y, int aux){
        else if ((x == 11 || x == 10 || x == 3 || x == 4) && (y > 0 && y < 9)) return 2;
    return 0;
 }
-// Función para saber si el balon pasa por encima del portero en area grande/ jugador en area chica
-// Parametros: x e y son las coordenadas de la casilla, aux es 0 si es para print_moves y distinto de 0 que son las casillas que se mueve la pelota
-// Retorno: 1 si es que la casilla se encuentra al lado del portero 1, 2 si es que la casilla se encuentra al lado del portero 2, 0 si no está al lado de ningun portero
+// Función para saber si el balon pasa por encima del portero en area grande/ jugador en area chica.
+// Parametros: x e y son las coordenadas de la casilla, team es 0 si es para team1, team es 1 para team2, sp es la cantidad de casillas a mover.
+// Retorno: 1 si es que la casilla se encuentra arriba de un jugador 2, 0 si no arriba de ningun jugador.
 int defend_box(int x, int y, int sp,int team){
        for (int j = 0; j <5; j++){
            for(int i = 1; i<= sp;i++){
@@ -61,6 +61,10 @@ int defend_box(int x, int y, int sp,int team){
                        return 1;
                        }
                    }
+                if((is_box(team1[0][0],team1[0][1],2)) == 2){
+                    if ((ball[0] + (x * i) == team1[0][0]) && (ball[1] + (y * i) == team1[1][1]))
+                    return 1;
+                }
                }
                else{
                if((is_box(team2[j][0],team2[j][1],1)) == 1){
@@ -68,8 +72,12 @@ int defend_box(int x, int y, int sp,int team){
                        return 1;
                        }
                    }
-               }
+                if((is_box(team2[0][0],team2[0][1],2)) == 2){
+                    if ((ball[0] + (x * i) == team2[0][0]) && (ball[1] + (y * i) == team2[0][1])){
+                    return 1;}
+                }
            }
+       }
        }
    return 0;
 }
@@ -239,8 +247,10 @@ int main(){
 						print_pitch();
 						continue;
 					}
+
+
 					if(defend_box(moves[chsn_d][0], moves[chsn_d][1], sp, (turn % 2))) {
-						puts("\n\tMovimiento inválido. No puedes tirar encima del defensa.");
+						puts("\n\tMovimiento inválido. No puedes tirar arriba de este jugador .");
 						print_pitch(); // Mostrar el campo después del movimiento inválido
 						continue;      // Saltar el turno actual y pasar al siguiente
 					}
@@ -253,6 +263,7 @@ int main(){
                if(ball[0] <= 0 || ball[0] >= 14){ // Si la pelota está en una portería
                    puts("\n\tGolazo!!!!");
                    reset_pitch();
+                   (turn % 2) ? goal[1]++: goal[0]++;
                }
                if(specbox(turn % 2)){
                    puts("\n\tTurno Extra por casilla especial");
@@ -268,13 +279,14 @@ int main(){
                    if(passes == 3 && check_adj(turn % 2, chsn_d, sp, 0))
                        continue;
                     if(defend_box(moves[chsn_d][0], moves[chsn_d][1], sp, (turn % 2))) {
-						puts("\n\tMovimiento inválido. No puedes tirar encima del defensa.");
+						puts("\n\tMovimiento inválido. No puedes tirar por arriba de este jugador.");
 						print_pitch(); // Mostrar el campo después del movimiento inválido
 						continue;      // Saltar el turno actual y pasar al siguiente
 					}
-                   if(verify_move(ball[0] + moves[chsn_d][0] * sp, ball[1] + moves[chsn_d][1] * sp, 1)) break;
-                   if(check_adj(turn % 2, chsn_d, sp, 1))
+                    if(check_adj(turn % 2, chsn_d, sp, 1))
                        continue;
+                   if(verify_move(ball[0] + moves[chsn_d][0] * sp, ball[1] + moves[chsn_d][1] * sp, 1)) break;
+                   
                    if(passes == 3 && check_adj(turn % 2, chsn_d, sp, 0))
                        continue;
                }
