@@ -196,7 +196,7 @@ int main(){
     printf("\tEmpieza el Jugador %s\n", turn % 2 ? "\033[34mAzul\033[0m" : "\033[31mRojo\033[0m");
     while(turn < 10 || goal[0] != 2 || goal[1] != 2){
         printf("\nJ1: %d\tJ2: %d\nTurno del Jugador %s\n",goal[0], goal[1], turn % 2 ? "\033[34mAzul\033[0m" : "\033[31mRojo\033[0m");
-        if(! players[turn % 2]) // Si el jugador en turno es una persona
+        if(! players[turn % 2]){ // Si el jugador en turno es una persona
             while(1){
                 puts("Que jugador desea mover? (1 - 5)\n");
                 print_pitch();
@@ -214,18 +214,20 @@ int main(){
                     break;
                 else puts("\n\tMovimiento invalido");
             }
-        else // Si el jugador en turno es un bot
+        move(!(turn % 2) ? &team1[chsn_p][0] : &team2[chsn_p][0], !(turn % 2) ? &team1[chsn_p][1] : &team2[chsn_p][1], moves[chsn_d][0] * sp, moves[chsn_d][1] * sp); // Mover el jugador
+        }
+        else{ // Si el jugador en turno es un bot
             while(1){
-                chsn_p = rand() % 6; // Se ingresa el jugador a mover
-                printf("chosen player: %d\n", chsn_p + 1);
-                chsn_d = rand() % 9; // Se ingresa la dirección del jugador
-                sp = (rand() % 2) + 1; // Ingresar cuantas casillas va a moverse el jugador
+                chsn_p = rand() % 5; 
+                chsn_d = rand() % 9;
+                sp = (rand() % 2) + 1; 
                 if(is_box((turn % 2 ? team2[chsn_p][0] : team1[chsn_p][0]) + moves[chsn_d][0] * sp, (turn % 2 ? team2[chsn_p][1] : team1[chsn_p][1]) + moves[chsn_d][1] * sp, turn % 2 + 1) == 3)
                     continue;
                 if(verify_move((turn % 2 ? team2[chsn_p][0] : team1[chsn_p][0]) + moves[chsn_d][0] * sp, (turn % 2 ? team2[chsn_p][1] : team1[chsn_p][1]) + moves[chsn_d][1] * sp, 0)) 
                     break;
             }
-        move(! (turn % 2) ? &team1[chsn_p][0] : &team2[chsn_p][0], ! (turn % 2) ? &team1[chsn_p][1] : &team2[chsn_p][1], moves[chsn_d][0] * sp, moves[chsn_d][1] * sp); // Mover el jugador
+        move(!(turn % 2) ? &team1[chsn_p][0] : &team2[chsn_p][0], !(turn % 2) ? &team1[chsn_p][1] : &team2[chsn_p][1], moves[chsn_d][0] * sp, moves[chsn_d][1] * sp); // Mover el jugador
+        }
         print_pitch();
         passes = 0; // Reinicio a 0 la cantidad de pases cada turno
         if(! players[turn % 2]){ // Si el jugador en turno es una persona
@@ -238,21 +240,20 @@ int main(){
                     sp = verify(sp, 1, 4, 0); // Ingresar cuantas casillas va a moverse la pelota
                     if(verify_move(ball[0] + moves[chsn_d][0] * sp, ball[1] + moves[chsn_d][1] * sp, 1)) break;
                     else puts("\n\tMovimiento invalido");
-                }
-                if(check_adj(turn % 2, chsn_d, sp, 1)){
-                     puts("\n\tMovimiento invalido. No podes dar un pase al rival");
-                     print_pitch();
-                     continue;
+                    if(check_adj(turn % 2, chsn_d, sp, 1)){
+                        puts("\n\tMovimiento invalido. No podes dar un pase al rival");
+                        print_pitch();
+                        continue;
                     }
-                    
                     if(passes == 3 && check_adj(turn % 2, chsn_d, sp, 0)){
                         puts("\n\tMovimiento invalido. No podes dar un 4to pase a un compañero");
                         print_pitch();
                         continue;
                     }
+                }
                 if(! goalkeeper_arms(moves[chsn_d][0], moves[chsn_d][1], sp)) // Si la pelota no va hacia el brazo de un portero, si va hacia ahí: se detendrá
                     move(&ball[0], &ball[1], moves[chsn_d][0] * sp, moves[chsn_d][1] * sp); // Mover la pelota
-                if(possesion(turn % 2, ball[0], ball[1])) passes++; // Si la pelota llega a un jugador de tu equipo, aumenta el contador de pases
+                if(possesion(turn % 2)) passes++; // Si la pelota llega a un jugador de tu equipo, aumenta el contador de pases
                 if(ball[0] <= 0 || ball[0] >= 14){ // Si la pelota está en una portería
                     puts("\n\tGolazo!!!!");
                     reset_pitch();
@@ -271,12 +272,18 @@ int main(){
                     if(passes == 3 && check_adj(turn % 2, chsn_d, sp, 0))
                         continue;
                     if(verify_move(ball[0] + moves[chsn_d][0] * sp, ball[1] + moves[chsn_d][1] * sp, 1)) break;
+                    if(check_adj(turn % 2, chsn_d, sp, 1))
+                        continue;
+                    if(passes == 3 && check_adj(turn % 2, chsn_d, sp, 0))
+                        continue;
+                    
                 }
                 move(&ball[0], &ball[1], moves[chsn_d][0] * sp, moves[chsn_d][1] * sp); // Mover la pelota
                 if(possesion(turn % 2)) passes++; // Si la pelota llega a un jugador de tu equipo, aumenta el contador de pases
                 if(ball[0] == 0 || ball[0] == 14){ // Si la pelota está en una portería
                     puts("\tGolazo!!!!");
-                    goal[ball[0] == 0 ? 0 : 1]++;
+                    if(ball[0] == 0) goal[0]++;
+                    else goal[1]++;
                     reset_pitch();
                 }
                 if(specbox(turn % 2)){
