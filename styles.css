@@ -26,9 +26,7 @@ button:hover {
 #main-window {
     background-image: url("board.png");
     background-size: auto 100%;
-    /* Ajusta solo la altura */
     background-position: center;
-    /* Centra la imagen horizontalmente */
     background-repeat: no-repeat;
 }
 
