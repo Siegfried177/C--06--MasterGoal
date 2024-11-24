@@ -1,32 +1,32 @@
-/* --- BUTTONS --- */
+/* styles.css */
+
+/* Fondo de la ventana principal para un tema de fútbol */
+
+/* Estilo para todos los botones */
 button {
-    opacity: 0.05;
-    /* 10% de opacidad */
-    color: white;
-    /* Color del texto */
-    padding: 10px;
-    /* Espaciado interno */
-    border: none;
-    /* Sin borde */
-    background-color: transparent;
-    /* Fondo transparente */
+    background-color: yellow; /* Fondo amarillo */
+    color: black; /* Texto negro */
+    padding: 5px;
+    border-radius: 10px;
+    border: 2px solid white; /* Borde blanco */
+    font-weight: bold;
 }
 
-button:hover {
-    background-color: darkgreen;
-    opacity: 0.4;
-    /* Color más oscuro en hover, también al 50% de transparencia */
+/* Estilos de etiquetas */
+
+/* Estilos para los campos de entrada */
+.entry {
+    background-color: #e0f7e9; /* Verde claro para el campo de entrada */
+    color: #333333; /* Texto oscuro */
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid red; /* Borde rojo */
 }
 
-#button-grid {
-    margin: 10px;
+.entry:focus {
+    border-color: #388e3c; /* Verde más oscuro al enfocar */
+    outline: none;
 }
 
-/* --- MAIN WINDOW --- */
-#main-window {
-    background-image: url("board.png");
-    background-size: auto 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-}
+/* Estilos específicos para los botones dentro de board_window */
 

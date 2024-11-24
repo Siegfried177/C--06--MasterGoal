@@ -1,0 +1,26 @@
+#board_window button {
+    opacity: 0.05; /* 5% de opacidad */
+    color: white; /* Color del texto */
+    padding: 10px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    background-color: transparent; /* Fondo transparente */
+}
+
+#board_window button:hover {
+    background-color: darkgreen;
+    opacity: 0.4; /* Color más oscuro en hover, con 40% de transparencia */
+}
+
+/* Ajustes para los botones en el grid dentro de board_window */
+#board_window .button-grid {
+    margin: 10px;
+}
+
+/* --- MAIN WINDOW --- */
+#board_window {
+    background-image: url("board.png");
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+

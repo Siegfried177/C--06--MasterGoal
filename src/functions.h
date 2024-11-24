@@ -1,4 +1,7 @@
-int verify(int num, int lim_inf, int lim_sup, int aux);
+extern int team1[5][2];
+extern int team2[5][2];
+extern int ball[2];
+extern int goals[2];
 
 int verify_move(int x, int y, int obj);
 
@@ -11,7 +14,5 @@ int defend_box(int x, int y, int sp, int team);
 int possesion(int team);
 
 int specbox(int team);
-
-int check_adj(int team, int chosen_dir, int spaces, int aux);
 
 void reset_pitch();
