@@ -3,8 +3,9 @@
 #include <time.h>
 
 char pitch[15][11]; // Matriz que representa el campo de juego
-int team1[5][2] = {{11, 5}, {10, 3}, {10, 7}, {8, 8}, {8, 2}}; // Matriz de posiciones del Equipo del Jugador 1
-int team2[5][2] = {{3, 5}, {4, 3}, {4, 7}, {6, 8}, {6, 2}}; // Matriz de posiciones del Equipo del Jugador 2 / Computadora
+//int team1[5][2] = {{11, 5}, {10, 3}, {10, 7}, {8, 8}, {8, 2}};
+int team1[5][2] = {{12,6}, {2,3}, {2,3}, {2,3}, {2,3}}; // Matriz de posiciones del Equipo del Jugador 1
+int team2[5][2] = {{10, 5}, {10, 3}, {10, 7}, {10, 8}, {10, 2}}; // Matriz de posiciones del Equipo del Jugador 2 / Computadora
 int ball[2] = {7, 5}, goals[2] = {0, 0};
 int moves[9][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 0}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}; // Las 8 direcciones que se pueden mover la pelota o un jugador
 

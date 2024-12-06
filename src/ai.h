@@ -1,2 +1,4 @@
 
-int defend();
+int pressure();
+
+int pass();

@@ -19,22 +19,37 @@ extern int team2[5][2];
 extern int ball[2];
 extern int goals[2];
 extern int last_moved_player;
+extern int bot_passes;
 
 // coords son las coordenadas de la casilla clickeada. bot es 0 si no juega la compu, 1 si juega. click_box. chosen_player es el indice del jugador seleccionado. turn es 0 si empieza el jugador 1 y 1 si empieza el jugador 2.
 int coords[2] = {-1, -1}, bot = 1, click_box, chosen_player, turn = 0, color_p1, color_p2, passes = 0;
 char *colors[15] = {"red.png", "blue.png", "yellow.png", "magenta.png"}, *colors_gk[15] = {"red_gk.png", "blue_gk.png", "yellow_gk.png", "magenta_gk.png"};
 
+
 void move_bot(){
-	// Si J1 tiene la posesion de la pelota en tu campo
-	if (ball[0] <= 4){
-		defend();
+	while(turn % 2){
+		int aux = -1;
+		if (ball[0] <= 4){
+			if (possesion(turn % 2)){
+				aux = pass();
+				if (! aux) break;
+			}
+			else{
+				pressure();
+			}
+		}
+		else{
+			if (possesion(turn % 2)){
+				aux = pass();
+				if (! aux) break;
+			}
+			else{
+				pressure();
+			}
+		}
 	}
-	// Si J1 tiene la posesion de la pelota en su campo
-	//if (ball > 7 && (! possesion(turn % 2)))
-	// Si J1 no tiene la posesion de la pelota en tu campo
-	//if (ball <= 7 && possesion(turn % 2))
-	// Si J1 no tiene la posesion de la pelota en su campo
-	//if (ball > 7 && possesion(turn % 2))
+	bot_passes = 0;
+	print_pitch();
 }
 
 // Funcion cuando un jugador marca un gol
@@ -144,13 +159,18 @@ void on_button_clicked(GtkWidget *button, gpointer data){
             	g_print("No podes dar un pase al rival\n");
             else{
             	move(&ball[0], &ball[1], x - ball[0], y - ball[1]);
+            	print_pitch();
             	last_moved_player = -1;
             	passes++;
-            	if (passes == 4 || ! possesion(turn % 2)){
+				if (ball[0] == 13 && (ball[1] == 0 || ball[1] == 10 || (ball[1] > 1 && ball[1] < 9))){
+					turn++;
+					turn++;
+					passes = 0;
+				}
+				else if (passes == 4 || ! possesion(turn % 2)){
             		turn++;
             		passes = 0;
             	}
-            	print_pitch();
             }
         }
     	move(&coords[0], &coords[1], -1 - coords[0], -1 - coords[1]);
@@ -187,30 +207,46 @@ void print_pitch(){
     gtk_container_foreach(GTK_CONTAINER(grid), (GtkCallback)gtk_widget_destroy, NULL); // Eliminamos los widgets para volver a mostrarlos
     for (int i = 0; i < ROWS; i++)
         for (int j = 0, flag = 0; j < COLS; j++){
-            GtkWidget *overlay = gtk_overlay_new(); // Se crea el overlay que tendrá las imagenes y el boton para cada casilla
-            flag = check_square(i, j);
+        	if (i == 0 && (j == 0 || j == 8)){ // Generar los marcadores
+                GtkWidget *overlay = gtk_overlay_new(); // Se crea el overlay que tendrá las imagenes y el boton para cada casilla
+                gtk_widget_set_size_request(overlay, 60, 60);
+                GtkWidget *label = gtk_label_new("HOLA"); // Se crea un botón
+                gchar id[10];
 
-            gtk_widget_set_size_request(overlay, 60, 60);
+                g_snprintf(id, sizeof(id), "label_%d", j);
+                g_object_set_data(G_OBJECT(label), "id", g_strdup(id)); // Se le asigna el ID
+                gtk_widget_set_hexpand(label, TRUE);
+                gtk_widget_set_vexpand(label, TRUE);
 
-            if (flag != -1){ // Si hay un jugador en la casilla i, j
-                GtkWidget *image = load_scaled_image(flag == -2 ? "ball.png" : flag == 0 ? colors_gk[color_p1] : flag < 5 ? colors[color_p1] : flag == 5 ? colors_gk[color_p2] : colors[color_p2], 60, 60);
-                if (image != NULL){
-                    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), image);
-                    gtk_widget_set_halign(image, GTK_ALIGN_CENTER);
-                    gtk_widget_set_valign(image, GTK_ALIGN_CENTER);
+                gtk_overlay_add_overlay(GTK_OVERLAY(overlay), label); // Se añade al overlay
+                gtk_grid_attach(GTK_GRID(grid), overlay, j, i, 3, 1); // Se añade al grid
+        	}
+        	else if (i != 0 || (i == 0 && (j > 2 && j < 8))){ // Generar los botones
+                GtkWidget *overlay = gtk_overlay_new(); // Se crea el overlay que tendrá las imagenes y el boton para cada casilla
+                flag = check_square(i, j);
+
+                gtk_widget_set_size_request(overlay, 60, 60);
+
+                if (flag != -1){ // Si hay un jugador en la casilla i, j
+                    GtkWidget *image = load_scaled_image(flag == -2 ? "ball.png" : flag == 0 ? colors_gk[color_p1] : flag < 5 ? colors[color_p1] : flag == 5 ? colors_gk[color_p2] : colors[color_p2], 60, 60);
+                    if (image != NULL){
+                        gtk_overlay_add_overlay(GTK_OVERLAY(overlay), image);
+                        gtk_widget_set_halign(image, GTK_ALIGN_CENTER);
+                        gtk_widget_set_valign(image, GTK_ALIGN_CENTER);
+                    }
                 }
-            }
 
-            GtkWidget *button = gtk_button_new(); // Se crea un botón
-            gchar id[10];
-            g_snprintf(id, sizeof(id), "btn_%d_%d", i, j);
-            g_object_set_data(G_OBJECT(button), "id", g_strdup(id)); // Se le asigna el ID
-            g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
-            gtk_widget_set_hexpand(button, TRUE);
-            gtk_widget_set_vexpand(button, TRUE);
+				GtkWidget *button = gtk_button_new(); // Se crea un botón
+				gchar id[10];
+				g_snprintf(id, sizeof(id), "btn_%d_%d", i, j);
+				g_object_set_data(G_OBJECT(button), "id", g_strdup(id)); // Se le asigna el ID
+				g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
+				gtk_widget_set_hexpand(button, TRUE);
+				gtk_widget_set_vexpand(button, TRUE);
 
-            gtk_overlay_add_overlay(GTK_OVERLAY(overlay), button); // Se añade al overlay
-            gtk_grid_attach(GTK_GRID(grid), overlay, j, i, 1, 1); // Se añade al grid
+				gtk_overlay_add_overlay(GTK_OVERLAY(overlay), button); // Se añade al overlay
+				gtk_grid_attach(GTK_GRID(grid), overlay, j, i, 1, 1); // Se añade al grid
+        	}
         }
     gtk_widget_show_all(grid);
 }
